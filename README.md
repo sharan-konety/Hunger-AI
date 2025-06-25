@@ -41,19 +41,18 @@ npm run dev
 Open http://localhost:3000 in your browser.
 
 🚢 Deploying to Vercel (Recommended)
-
 Push your code to GitHub
 Go to vercel.com and import your repo
 In Vercel dashboard → Settings → Environment Variables
 Add:
 OPENAI_API_KEY=your-openai-api-key
 Deploy! Your app will be live on a .vercel.app domain
-🔑 Environment Variables
 
+🔑 Environment Variables
 Variable	Description
 OPENAI_API_KEY	Your OpenAI API key (serverless functions)
-🙏 Credits
 
+🙏 Credits
 Restaurant/menu images: Unsplash
 Built with ❤️ by Sharan Konety
 
