@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍱 Hunger – AI-Powered Food Delivery Platform
 
-## Getting Started
+Hunger is a full-stack food delivery web app powered by OpenAI. Users can browse restaurants, explore menus, manage a real-time cart, simulate order tracking, and get personalized food suggestions via AI.
 
-First, run the development server:
+Built with **Next.js (App Router)**, **Tailwind CSS**, **OpenAI GPT-3.5**, and deployed on **Vercel**.
+
+![Hunger AI Preview](./preview.png)
+
+---
+
+## 🚀 Features
+
+- 🛍️ Browse restaurants with interactive cards
+- 📋 View menus, add to cart, and manage orders in real time
+- 🤖 Get smart food recommendations via OpenAI
+- 🚚 Simulate order tracking with dynamic status updates
+- 🌗 Fully responsive design with dark mode
+- 🧠 Built with App Router, server components, and AI APIs
+
+---
+
+## 🧰 Tech Stack
+
+- **Framework:** Next.js 14 (App Router, TypeScript)
+- **Styling:** Tailwind CSS
+- **AI Integration:** OpenAI GPT-3.5 (`/api/recommend`)
+- **Deployment:** Vercel
+- **State Management:** React Context (for Cart)
+- **Animations & Icons:** Heroicons, Framer Motion
+
+---
+
+## ⚙️ Getting Started
+
+```bash
+git clone https://github.com/sharan-konety/Hunger-AI.git
+cd Hunger-AI
+npm install
+```
+
+Create a `.env.local` file:
+
+```env
+OPENAI_API_KEY=your_openai_key_here
+```
+
+Then run locally:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+├── restaurants/       → Menu + Listings
+├── recommend/         → OpenAI-powered chat
+├── order/tracking/    → Order simulation
+├── api/recommend/     → GPT-3.5 API route
+components/            → UI Components
+lib/data.ts            → Mock restaurants/menus
+styles/                → Tailwind CSS
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🧠 AI Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Food recommendations are generated using `gpt-3.5-turbo`. Users can enter prompts like:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- "I'm craving something spicy"
+- "Show me protein-heavy options"
+- "What should I eat post-workout?"
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🖥️ Live Demo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[➡️ View Demo on Vercel](https://your-vercel-url.vercel.app)
+
+---
+
+## 🙌 Acknowledgments
+
+- [OpenAI](https://openai.com/)
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
