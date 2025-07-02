@@ -12,7 +12,6 @@ Order delicious food from your favorite restaurants, get AI-powered recommendati
 - Track your order status  
 - AI-powered food recommendations (OpenAI integration)  
 - Responsive, mobile-friendly design  
-- Light & dark mode support  
 - Persistent cart (localStorage)
 
 ---
