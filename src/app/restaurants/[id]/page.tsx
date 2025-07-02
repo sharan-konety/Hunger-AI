@@ -20,8 +20,6 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [pendingItem, setPendingItem] = useState<MenuItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  if (!restaurant) return notFound();
 
   // Helper function to get current quantity of an item in cart
   const getItemQuantity = (itemId: string): number => {
@@ -36,6 +34,8 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
     }, 300);
     return () => clearTimeout(timer);
   }, []);
+  
+  if (!restaurant) return notFound();
 
   const handleAddToCart = (item: MenuItem) => {
     const success = addToCart(item, restaurant.id, restaurant.name);
@@ -170,65 +170,65 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
             ) : (
               // Show actual menu items
               restaurant.menu.map((item, index) => (
-                <div 
-                  key={item.id} 
-                  className="bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 hover:border-cyan-200 p-8 transition-all duration-500 group transform hover:-translate-y-2"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex flex-col h-full">
-                    <div className="flex-1 mb-6">
-                      <h3 className="text-xl font-medium text-slate-900 mb-3 group-hover:text-slate-800 transition-colors">
-                        {item.name}
-                      </h3>
-                      <p className="text-slate-600 leading-relaxed font-light">
-                        {item.description}
-                      </p>
-                    </div>
+              <div 
+                key={item.id} 
+                className="bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 hover:border-cyan-200 p-8 transition-all duration-500 group transform hover:-translate-y-2"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="flex flex-col h-full">
+                  <div className="flex-1 mb-6">
+                    <h3 className="text-xl font-medium text-slate-900 mb-3 group-hover:text-slate-800 transition-colors">
+                      {item.name}
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed font-light">
+                      {item.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-medium text-slate-900">
+                      ${item.price.toFixed(2)}
+                    </span>
                     
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-medium text-slate-900">
-                        ${item.price.toFixed(2)}
-                      </span>
-                      
-                      {/* Quantity Controls */}
-                      {getItemQuantity(item.id) === 0 ? (
-                        <button 
-                          onClick={() => handleAddToCart(item)}
-                          className="bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                    {/* Quantity Controls */}
+                    {getItemQuantity(item.id) === 0 ? (
+                      <button 
+                        onClick={() => handleAddToCart(item)}
+                        className="bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add to Cart
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl p-2">
+                        <button
+                          onClick={() => updateQuantity(item.id, getItemQuantity(item.id) - 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all duration-200 hover:scale-110"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                          </svg>
+                        </button>
+                        
+                        <span className="min-w-[2rem] text-center font-medium text-slate-900 text-lg">
+                          {getItemQuantity(item.id)}
+                        </span>
+                        
+                        <button
+                          onClick={() => updateQuantity(item.id, getItemQuantity(item.id) + 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-lg transition-all duration-200 hover:scale-110 shadow-lg"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                           </svg>
-                          Add to Cart
                         </button>
-                      ) : (
-                        <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl p-2">
-                          <button
-                            onClick={() => updateQuantity(item.id, getItemQuantity(item.id) - 1)}
-                            className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all duration-200 hover:scale-110"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
-                            </svg>
-                          </button>
-                          
-                          <span className="min-w-[2rem] text-center font-medium text-slate-900 text-lg">
-                            {getItemQuantity(item.id)}
-                          </span>
-                          
-                          <button
-                            onClick={() => updateQuantity(item.id, getItemQuantity(item.id) + 1)}
-                            className="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-lg transition-all duration-200 hover:scale-110 shadow-lg"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+              </div>
               ))
             )}
           </div>

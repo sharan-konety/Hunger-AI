@@ -23,8 +23,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
   }, [isOpen]);
 
   const handleCheckout = () => {
+    completeOrder(); // This saves the order and clears the cart
     setShowOrderConfirmation(true);
-    completeOrder(); // This saves the order to past orders and clears cart
     setTimeout(() => {
       setShowOrderConfirmation(false);
       setIsOpen(false);
@@ -98,15 +98,15 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
                 <p className="text-lg text-cyan-600 font-medium mb-6">
                   Estimated delivery: <span className="font-semibold">15-30 minutes</span>
                 </p>
-                <p className="text-sm text-slate-500 font-light">
-                  View your order in 
-                  <button 
-                    onClick={() => {setIsOpen(false); window.location.href = '/orders';}}
-                    className="text-cyan-600 hover:text-cyan-700 font-medium ml-1 underline"
-                  >
-                    Order History
-                  </button>
-                </p>
+                <a
+                  href="/orders"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  View Order History
+                </a>
               </div>
             ) : items.length === 0 ? (
               <div className="p-8 md:p-12 text-center">

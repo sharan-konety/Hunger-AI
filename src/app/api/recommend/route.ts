@@ -14,13 +14,19 @@ function isTopRatedQuery(query: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('API endpoint hit');
     const body = await req.json();
+    console.log('Request body:', body);
+    
     const query = body.query || body.craving;
     const conversationHistory = body.conversationHistory || [];
 
     if (!query || typeof query !== 'string') {
+      console.log('Invalid query:', query);
       return NextResponse.json({ error: 'Missing or invalid query' }, { status: 400 });
     }
+
+    console.log('Processing query:', query);
 
     // Handle top rated/best restaurant queries directly
     if (isTopRatedQuery(query)) {
@@ -36,63 +42,96 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Use OpenAI's API (assume env var OPENAI_API_KEY is set)
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
-    }
-
-    // Get all restaurants and menu items for context
-    const restaurantContext = restaurants.map(restaurant => ({
-      name: restaurant.name,
-      cuisine: restaurant.cuisine.join(', '),
-      rating: restaurant.rating,
-      description: restaurant.description,
-      popularItems: restaurant.menu.slice(0, 3).map(item => ({
+    // Get all menu items from all restaurants for context
+    const allMenuItems = restaurants.flatMap(restaurant => 
+      restaurant.menu.map(item => ({
         name: item.name,
         description: item.description,
-        price: item.price
+        price: item.price,
+        restaurant: restaurant.name,
+        cuisine: restaurant.cuisine.join(', '),
+        rating: restaurant.rating
       }))
-    }));
+    );
 
-    const contextString = restaurantContext.map(restaurant => 
-      `${restaurant.name} (${restaurant.cuisine}, ${restaurant.rating}★): ${restaurant.description}
-Popular dishes: ${restaurant.popularItems.map(item => `${item.name} ($${item.price}) - ${item.description}`).join('; ')}`
-    ).join('\n\n');
+    // Limit menu context to prevent token overflow
+    const limitedMenuItems = allMenuItems.slice(0, 30); // Reduce from all items to 30
+    const menuContext = limitedMenuItems.map(item => 
+      `${item.name} from ${item.restaurant} (${item.cuisine}) - $${item.price.toFixed(2)}`
+    ).join('\n');
 
-    // Enhanced system prompt with chain of thought reasoning
-    const systemPrompt = `You are a knowledgeable food concierge for Hunger, a premium food delivery service. Your job is to provide thoughtful, personalized restaurant and dish recommendations.
+    // Use OpenAI's API (assume env var OPENAI_API_KEY is set)
+    const apiKey = process.env.OPENAI_API_KEY;
+    console.log('API key exists:', !!apiKey);
+    
+    if (!apiKey) {
+      console.warn('OpenAI API key not configured, using fallback recommendations');
+      // Fallback to manual recommendations when API key is missing
+      const loweredQuery = query.toLowerCase();
+      console.log('Using fallback for query:', loweredQuery);
+      
+      if (loweredQuery.includes('italian')) {
+        const italianItems = allMenuItems.filter(item => 
+          item.cuisine.toLowerCase().includes('italian')
+        ).slice(0, 5);
+        console.log('Found Italian items:', italianItems.length);
+        
+        if (italianItems.length > 0) {
+          const recommendations = italianItems.map(item => 
+            `• ${item.name} from ${item.restaurant} - $${item.price.toFixed(2)}\n  ${item.description}`
+          );
+          
+          return NextResponse.json({
+            suggestions: [`Here are some delicious Italian options for you:\n\n${recommendations.join('\n\n')}`]
+          });
+        }
+      }
+      
+      // Enhanced generic fallback with actual restaurant data
+      const randomItems = allMenuItems.slice(0, 5);
+      const fallbackRecommendations = randomItems.map(item => 
+        `• ${item.name} from ${item.restaurant} - $${item.price.toFixed(2)}`
+      );
+      
+      return NextResponse.json({
+        suggestions: [`I don't have an OpenAI API key configured, but here are some popular dishes from our restaurants:\n\n${fallbackRecommendations.join('\n')}`]
+      });
+    }
 
-REASONING APPROACH:
-1. First, understand what the user is asking for (cuisine type, dietary needs, mood, etc.)
-2. Consider our conversation history to understand their preferences
-3. Think through which restaurants and dishes would best match their needs
-4. Explain your reasoning clearly and provide specific recommendations
-
-AVAILABLE RESTAURANTS:
-${contextString}
-
-RESPONSE STYLE:
-- Be conversational and friendly, like a knowledgeable food expert
-- Show your thinking process: "Based on what you're looking for..."
-- Give specific dish recommendations with brief explanations
-- Consider dietary restrictions, preferences, and context from our conversation
-- If appropriate, suggest complementary items or alternatives
-- Keep responses focused but informative
-
-EXAMPLE REASONING:
-"Since you mentioned you're in the mood for something spicy, I'm thinking of our Indian options. Saffron Spice would be perfect - their Butter Chicken has that rich, creamy heat you might enjoy, and if you want something lighter, their Tandoori Chicken is excellently spiced without being too heavy."
-
-Always explain WHY you're recommending something based on the user's needs and preferences.`;
-
-    // Build messages array with conversation history
+    // Simplified approach - limit conversation history to prevent confusion
+    const recentHistory = conversationHistory.slice(-4); // Only last 2 exchanges
+    
     const messages = [
       {
         role: 'system',
-        content: systemPrompt,
+        content: `You are a helpful assistant for the Hunger food delivery app. 
+
+IMPORTANT: 
+- Only recommend food when the user specifically asks for food recommendations or mentions being hungry/wanting to eat
+- You CANNOT place orders or add items to cart - you can only provide recommendations and information
+
+For greetings like "hello", "hi", "hey": Respond with a friendly greeting and ask what they're looking for.
+
+For food requests: 
+- Limit initial recommendations to 5 items maximum
+- Show DIVERSE options from DIFFERENT restaurants and cuisines (mix Italian, Japanese, Indian)
+- Include dish name, restaurant name, and price
+- After showing 5 options, ask "Would you like to see more options?"
+
+When users want to order:
+- Explain that they need to visit the restaurant page to add items to their cart
+- Say something like "To order [dish], you'll need to visit the [restaurant] page and add it to your cart"
+- DO NOT offer to place orders or say you will help place orders
+
+Use this menu data: ${menuContext}`,
       },
-      // Include conversation history for context
-      ...conversationHistory.slice(-8), // Keep last 8 messages for context
+      // Include limited conversation history
+      ...recentHistory,
+      // Add the current query WITHOUT the pushy instruction
+      {
+        role: 'user',
+        content: query,
+      },
     ];
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -104,22 +143,33 @@ Always explain WHY you're recommending something based on the user's needs and p
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
         messages: messages,
-        max_tokens: 500,
+        max_tokens: 1000,
         temperature: 0.7,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
       }),
     });
 
     if (!openaiRes.ok) {
+      console.error('OpenAI API error:', openaiRes.status, openaiRes.statusText);
+      const errorText = await openaiRes.text();
+      console.error('OpenAI error details:', errorText);
       return NextResponse.json({ error: 'Failed to fetch from OpenAI' }, { status: 500 });
     }
 
     const openaiData = await openaiRes.json();
+    console.log('OpenAI response:', openaiData);
+    
     const content = openaiData.choices?.[0]?.message?.content || '';
+    console.log('Generated content:', content);
 
-    // Return the full response as an array of lines for the chat widget
-    const suggestions = content.split('\n').filter((line: string) => line.trim().length > 0);
+    if (!content.trim()) {
+      console.error('Empty content from OpenAI');
+      return NextResponse.json({ 
+        suggestions: ['I apologize, but I encountered an issue generating recommendations. Please try again or browse our restaurants directly!'] 
+      });
+    }
+
+    // Return the full response as a single message instead of splitting by lines
+    const suggestions = [content.trim()];
 
     return NextResponse.json({ suggestions });
   } catch (err) {

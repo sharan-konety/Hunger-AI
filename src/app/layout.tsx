@@ -6,6 +6,7 @@ import { CartProvider } from '@/components/CartContext';
 import AIChatWidget, { ChatProvider } from '@/components/AIChatWidget';
 import ErrorBoundary, { CartErrorBoundary } from '@/components/ErrorBoundary';
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -55,32 +56,32 @@ export default function RootLayout({
                     {children}
                   </ErrorBoundary>
                 </div>
-                
-                {/* Footer with Copyright */}
-                <footer className="bg-slate-900 text-white py-4 px-6">
-                  <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-2xl font-light tracking-tight">Hunger</span>
-                        <div className="w-1 h-1 bg-cyan-400 rounded-full"></div>
-                        <span className="text-slate-400 font-light">Culinary Excellence</span>
-                      </div>
-                      
-                      <div className="text-center md:text-right">
-                        <p className="text-slate-400 text-sm font-light">
-                          © {new Date().getFullYear()} Hunger. All rights reserved.
-                        </p>
-                        <p className="text-slate-500 text-xs font-light mt-1">
-                          Powered by AI • Crafted with passion
-                        </p>
-                      </div>
-                    </div>
-                    
- 
+            
+            {/* Footer with Copyright */}
+            <footer className="bg-slate-900 text-white py-4 px-6">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl font-light tracking-tight">Hunger</span>
+                    <div className="w-1 h-1 bg-cyan-400 rounded-full"></div>
+                    <span className="text-slate-400 font-light">Culinary Excellence</span>
                   </div>
-                </footer>
+                  
+                  <div className="text-center md:text-right">
+                    <p className="text-slate-400 text-sm font-light">
+                      © {new Date().getFullYear()} Hunger. All rights reserved.
+                    </p>
+                    <p className="text-slate-500 text-xs font-light mt-1">
+                      Powered by AI • Crafted with passion
+                    </p>
+                  </div>
+                </div>
                 
-                <AIChatWidget />
+
+              </div>
+            </footer>
+            
+            <AIChatWidget />
               </CartProvider>
             </CartErrorBoundary>
           </ChatProvider>

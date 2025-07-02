@@ -47,6 +47,14 @@ OPENAI_API_KEY=your_openai_key_here
 Then run locally:
 
 ```bash
+git clone https://github.com/sharan-konety/hunger.git
+cd hunger
+npm install
+Create a .env.local file in the root and add:
+
+OPENAI_API_KEY=your-openai-api-key-here
+Then start the server:
+
 npm run dev
 ```
 

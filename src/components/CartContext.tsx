@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { MenuItem } from '@/lib/data';
 
 interface CartItem extends MenuItem {
@@ -11,11 +11,11 @@ interface CartItem extends MenuItem {
 
 interface PastOrder {
   id: string;
+  date: string;
   items: CartItem[];
-  restaurant: { id: string; name: string };
   total: number;
-  orderDate: string;
-  status: 'completed' | 'delivered';
+  restaurantId: string;
+  restaurantName: string;
 }
 
 interface CartContextType {
@@ -29,7 +29,7 @@ interface CartContextType {
   getTotalItems: () => number;
   getTotalPrice: () => number;
   completeOrder: () => void;
-  reorder: (orderId: string) => boolean;
+  reorder: (orderId: string) => Promise<boolean>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -38,67 +38,64 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [items, setItems] = useState<CartItem[]>([]);
   const [currentRestaurant, setCurrentRestaurant] = useState<{ id: string; name: string } | null>(null);
   const [pastOrders, setPastOrders] = useState<PastOrder[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load cart and past orders from localStorage on mount
+  // Load data from localStorage on mount
   useEffect(() => {
-    try {
+    if (typeof window !== 'undefined') {
       const savedCart = localStorage.getItem('hunger-cart');
       const savedRestaurant = localStorage.getItem('hunger-current-restaurant');
-      const savedPastOrders = localStorage.getItem('hunger-past-orders');
-      
+      const savedOrders = localStorage.getItem('hunger-past-orders');
+
       if (savedCart) {
-        setItems(JSON.parse(savedCart));
+        try {
+          setItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error('Error loading cart from localStorage:', error);
+        }
       }
+
       if (savedRestaurant) {
-        setCurrentRestaurant(JSON.parse(savedRestaurant));
+        try {
+          setCurrentRestaurant(JSON.parse(savedRestaurant));
+        } catch (error) {
+          console.error('Error loading restaurant from localStorage:', error);
+        }
       }
-      if (savedPastOrders) {
-        setPastOrders(JSON.parse(savedPastOrders));
+
+      if (savedOrders) {
+        try {
+          setPastOrders(JSON.parse(savedOrders));
+        } catch (error) {
+          console.error('Error loading past orders from localStorage:', error);
+        }
       }
-    } catch (error) {
-      console.error('Failed to load data from localStorage:', error);
-    } finally {
-      setIsLoaded(true);
     }
   }, []);
 
-  // Save cart to localStorage whenever items change
+  // Save cart items to localStorage whenever they change
   useEffect(() => {
-    if (isLoaded) {
-      try {
-        localStorage.setItem('hunger-cart', JSON.stringify(items));
-      } catch (error) {
-        console.error('Failed to save cart to localStorage:', error);
-      }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hunger-cart', JSON.stringify(items));
     }
-  }, [items, isLoaded]);
+  }, [items]);
 
   // Save current restaurant to localStorage whenever it changes
   useEffect(() => {
-    if (isLoaded) {
-      try {
-        if (currentRestaurant) {
-          localStorage.setItem('hunger-current-restaurant', JSON.stringify(currentRestaurant));
-        } else {
-          localStorage.removeItem('hunger-current-restaurant');
-        }
-      } catch (error) {
-        console.error('Failed to save restaurant to localStorage:', error);
+    if (typeof window !== 'undefined') {
+      if (currentRestaurant) {
+        localStorage.setItem('hunger-current-restaurant', JSON.stringify(currentRestaurant));
+      } else {
+        localStorage.removeItem('hunger-current-restaurant');
       }
     }
-  }, [currentRestaurant, isLoaded]);
+  }, [currentRestaurant]);
 
   // Save past orders to localStorage whenever they change
   useEffect(() => {
-    if (isLoaded) {
-      try {
-        localStorage.setItem('hunger-past-orders', JSON.stringify(pastOrders));
-      } catch (error) {
-        console.error('Failed to save past orders to localStorage:', error);
-      }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hunger-past-orders', JSON.stringify(pastOrders));
     }
-  }, [pastOrders, isLoaded]);
+  }, [pastOrders]);
 
   const addToCart = (item: MenuItem, restaurantId: string, restaurantName: string): boolean => {
     // Check if cart has items from a different restaurant
@@ -171,31 +168,36 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const completeOrder = () => {
     if (items.length === 0 || !currentRestaurant) return;
 
-    const newOrder: PastOrder = {
-      id: `order-${Date.now()}`,
+    const order: PastOrder = {
+      id: `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      date: new Date().toISOString(),
       items: [...items],
-      restaurant: { ...currentRestaurant },
       total: getTotalPrice(),
-      orderDate: new Date().toISOString(),
-      status: 'completed'
+      restaurantId: currentRestaurant.id,
+      restaurantName: currentRestaurant.name,
     };
 
-    setPastOrders(prev => [newOrder, ...prev]);
+    setPastOrders(prev => [order, ...prev]);
     clearCart();
   };
 
-  const reorder = (orderId: string): boolean => {
+  const reorder = async (orderId: string): Promise<boolean> => {
     const order = pastOrders.find(o => o.id === orderId);
     if (!order) return false;
 
-    // Check if cart has items from a different restaurant
-    if (currentRestaurant && currentRestaurant.id !== order.restaurant.id) {
-      return false; // Would need to clear cart first
+    // Check if we need to clear cart due to different restaurant
+    if (currentRestaurant && currentRestaurant.id !== order.restaurantId) {
+      const shouldClear = window.confirm(
+        `Your cart contains items from ${currentRestaurant.name}. Do you want to clear it and add items from ${order.restaurantName}?`
+      );
+      if (!shouldClear) return false;
+      clearCart();
     }
 
-    // Clear current cart and add all items from the past order
-    setItems(order.items);
-    setCurrentRestaurant(order.restaurant);
+    // Add all items from the order
+    setCurrentRestaurant({ id: order.restaurantId, name: order.restaurantName });
+    setItems(order.items.map(item => ({ ...item })));
+
     return true;
   };
 
