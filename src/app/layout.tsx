@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from '@/components/Navbar';
 import { CartProvider } from '@/components/CartContext';
 import AIChatWidget, { ChatProvider } from '@/components/AIChatWidget';
+import ErrorBoundary, { CartErrorBoundary } from '@/components/ErrorBoundary';
 
 
 const geistSans = Geist({
@@ -29,12 +30,32 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-white min-h-screen font-sans`}>
-        <ChatProvider>
-          <CartProvider>
-            <Navbar />
-            <div className="pt-20">{/* Add padding for fixed navbar */}
-              {children}
-            </div>
+        <ErrorBoundary>
+          <ChatProvider>
+            <CartErrorBoundary>
+              <CartProvider>
+                <Navbar />
+                <div className="pt-20">{/* Add padding for fixed navbar */}
+                  <ErrorBoundary fallback={
+                    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 flex items-center justify-center px-6">
+                      <div className="text-center">
+                        <div className="text-4xl mb-4">🍽️</div>
+                        <h2 className="text-2xl font-light text-slate-900 mb-4">Page Error</h2>
+                        <p className="text-slate-600 font-light mb-6">
+                          This page encountered an error, but you can still browse other restaurants.
+                        </p>
+                        <a 
+                          href="/" 
+                          className="px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-xl font-medium hover:from-slate-900 hover:to-black transition-all duration-300"
+                        >
+                          Go to Home
+                        </a>
+                      </div>
+                    </div>
+                  }>
+                    {children}
+                  </ErrorBoundary>
+                </div>
             
             {/* Footer with Copyright */}
             <footer className="bg-slate-900 text-white py-4 px-6">
@@ -61,8 +82,10 @@ export default function RootLayout({
             </footer>
             
             <AIChatWidget />
-          </CartProvider>
-        </ChatProvider>
+              </CartProvider>
+            </CartErrorBoundary>
+          </ChatProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

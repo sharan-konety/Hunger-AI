@@ -1,12 +1,51 @@
 "use client";
 
-
+import React, { useState, useEffect } from 'react';
 import RestaurantCard from '@/components/RestaurantCard';
 import { restaurants } from '@/lib/data';
 import { useChatWidget } from '@/components/AIChatWidget';
+import { RestaurantCardSkeleton } from '@/components/LoadingSkeleton';
 
 const RestaurantsPage = () => {
   const { openChat } = useChatWidget();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCuisine, setSelectedCuisine] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAllCuisines, setShowAllCuisines] = useState(false);
+
+  // Get unique cuisines from all restaurants
+  const allCuisines = ['All', ...Array.from(new Set(restaurants.flatMap(r => r.cuisine)))];
+  
+  // Show only first few cuisines by default
+  const cuisinesToShow = showAllCuisines ? allCuisines : allCuisines.slice(0, 5);
+  const hasMoreCuisines = allCuisines.length > 5;
+
+  // Filter restaurants based on search and cuisine
+  const filteredRestaurants = restaurants.filter(restaurant => {
+    const matchesSearch = 
+      restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      restaurant.cuisine.some(cuisine => cuisine.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCuisine = 
+      selectedCuisine === 'All' || 
+      restaurant.cuisine.includes(selectedCuisine);
+    
+    return matchesSearch && matchesCuisine;
+  });
+
+  // Reset filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedCuisine('All');
+  };
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 pt-32 pb-20">
@@ -45,23 +84,167 @@ const RestaurantsPage = () => {
           </div>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="mb-16">
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search restaurants or cuisines..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-6 py-4 pl-14 text-lg bg-white border border-slate-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
+              />
+              <svg className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Cuisine Filter Buttons */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {cuisinesToShow.map((cuisine) => (
+              <button
+                key={cuisine}
+                onClick={() => setSelectedCuisine(cuisine)}
+                className={`px-6 py-3 rounded-2xl font-medium transition-all duration-300 ${
+                  selectedCuisine === cuisine
+                    ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg'
+                    : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {cuisine}
+              </button>
+            ))}
+            
+            {/* More/Less Button */}
+            {hasMoreCuisines && (
+              <button
+                onClick={() => setShowAllCuisines(!showAllCuisines)}
+                className="px-6 py-3 rounded-2xl font-medium transition-all duration-300 bg-cyan-50 text-cyan-600 border border-cyan-200 hover:border-cyan-300 hover:bg-cyan-100 flex items-center gap-2"
+              >
+                {showAllCuisines ? (
+                  <>
+                    <span>Less</span>
+                    <svg className="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    </svg>
+                  </>
+                ) : (
+                  <>
+                    <span>More ({allCuisines.length - 5})</span>
+                    <svg className="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Results Info */}
+          <div className="flex items-center justify-between mb-8 px-4">
+            <div className="text-slate-600 font-light">
+              {isLoading ? (
+                <div className="h-5 w-32 bg-slate-200 rounded animate-pulse"></div>
+              ) : (
+                <span>
+                  {filteredRestaurants.length} restaurant{filteredRestaurants.length !== 1 ? 's' : ''} found
+                  {(searchTerm || selectedCuisine !== 'All') && (
+                    <span className="ml-2">
+                      {searchTerm && `for "${searchTerm}"`}
+                      {searchTerm && selectedCuisine !== 'All' && ' in '}
+                      {selectedCuisine !== 'All' && `${selectedCuisine} cuisine`}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+            
+            {(searchTerm || selectedCuisine !== 'All') && !isLoading && (
+              <button
+                onClick={resetFilters}
+                className="text-cyan-600 hover:text-cyan-700 font-medium text-sm flex items-center gap-1 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset filters
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Restaurants Grid */}
         <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {restaurants.map((restaurant, index) => (
-            <div 
-              key={restaurant.id}
-              className="transform hover:-translate-y-2 transition-all duration-500"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <RestaurantCard
-                id={restaurant.id}
-                name={restaurant.name}
-                image={restaurant.image}
-                rating={restaurant.rating}
-                cuisine={restaurant.cuisine}
-              />
+          {isLoading ? (
+            // Show loading skeletons
+            Array.from({ length: 8 }).map((_, index) => (
+              <RestaurantCardSkeleton key={index} />
+            ))
+          ) : filteredRestaurants.length > 0 ? (
+            // Show filtered restaurants
+            filteredRestaurants.map((restaurant, index) => (
+              <div 
+                key={restaurant.id}
+                className="transform hover:-translate-y-2 transition-all duration-500"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <RestaurantCard
+                  id={restaurant.id}
+                  name={restaurant.name}
+                  image={restaurant.image}
+                  rating={restaurant.rating}
+                  cuisine={restaurant.cuisine}
+                />
+              </div>
+            ))
+          ) : (
+            // No results state
+            <div className="col-span-full">
+              <div className="text-center py-20 px-6">
+                <div className="text-6xl mb-6">🔍</div>
+                <h3 className="text-2xl font-light text-slate-900 mb-4">No restaurants found</h3>
+                <p className="text-slate-600 font-light mb-8 max-w-md mx-auto">
+                  {searchTerm ? (
+                    <>We couldn&apos;t find any restaurants matching &quot;{searchTerm}&quot;</>
+                  ) : selectedCuisine !== 'All' ? (
+                    <>No restaurants found for {selectedCuisine} cuisine</>
+                  ) : (
+                    <>Try adjusting your search or filters</>
+                  )}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={resetFilters}
+                    className="px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                  >
+                    Clear filters
+                  </button>
+                  <button 
+                    onClick={openChat}
+                    className="px-6 py-3 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-xl font-medium transition-all duration-300 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                    Ask AI for help
+                  </button>
+                </div>
+              </div>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Bottom CTA */}

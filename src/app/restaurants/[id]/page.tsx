@@ -3,10 +3,12 @@
 // Update cart context on add
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { restaurants, MenuItem } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { useCart } from '@/components/CartContext';
+import { MenuItemSkeleton } from '@/components/LoadingSkeleton';
 
 const mockDeliveryTime = '20-30 min';
 const mockDeliveryFee = 'Free delivery over $35';
@@ -14,9 +16,24 @@ const mockDeliveryFee = 'Free delivery over $35';
 export default function RestaurantPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = React.use(params);
   const restaurant = restaurants.find(r => r.id === resolvedParams.id);
-  const { addToCart, currentRestaurant, clearCart } = useCart();
+  const { items, addToCart, updateQuantity, currentRestaurant, clearCart } = useCart();
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [pendingItem, setPendingItem] = useState<MenuItem | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Helper function to get current quantity of an item in cart
+  const getItemQuantity = (itemId: string): number => {
+    const cartItem = items.find(item => item.id === itemId);
+    return cartItem ? cartItem.quantity : 0;
+  };
+
+  // Simulate loading for demonstration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
   
   if (!restaurant) return notFound();
 
@@ -48,10 +65,15 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
       {/* Hero Banner */}
       <div className="relative h-80 md:h-96 w-full overflow-hidden">
-        <img
+        <Image
           src={restaurant.image}
-          alt={restaurant.name}
-          className="absolute inset-0 w-full h-full object-cover scale-105"
+          alt={`${restaurant.name} restaurant banner`}
+          fill
+          sizes="100vw"
+          className="object-cover scale-105"
+          priority={true}
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+pP5+XsH4/mm2x8ZhUDsJA1A3OIl9TrUMeqlqUAIHIHBJ5HU/FMDcjZd8XkPbzjsjxtOTf/9k="
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         
@@ -127,7 +149,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* Menu Section */}
-        <div className="mb-20">
+        <div>
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 tracking-tight">
               Our Menu
@@ -140,7 +162,14 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
           </div>
           
           <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {restaurant.menu.map((item, index) => (
+            {isLoading ? (
+              // Show loading skeletons
+              Array.from({ length: 6 }).map((_, index) => (
+                <MenuItemSkeleton key={index} />
+              ))
+            ) : (
+              // Show actual menu items
+              restaurant.menu.map((item, index) => (
               <div 
                 key={item.id} 
                 className="bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 hover:border-cyan-200 p-8 transition-all duration-500 group transform hover:-translate-y-2"
@@ -160,19 +189,48 @@ export default function RestaurantPage({ params }: { params: Promise<{ id: strin
                     <span className="text-2xl font-medium text-slate-900">
                       ${item.price.toFixed(2)}
                     </span>
-                    <button 
-                      onClick={() => handleAddToCart(item)}
-                      className="bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      Add to Cart
-                    </button>
+                    
+                    {/* Quantity Controls */}
+                    {getItemQuantity(item.id) === 0 ? (
+                      <button 
+                        onClick={() => handleAddToCart(item)}
+                        className="bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add to Cart
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-3 bg-white border-2 border-slate-200 rounded-2xl p-2">
+                        <button
+                          onClick={() => updateQuantity(item.id, getItemQuantity(item.id) - 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all duration-200 hover:scale-110"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                          </svg>
+                        </button>
+                        
+                        <span className="min-w-[2rem] text-center font-medium text-slate-900 text-lg">
+                          {getItemQuantity(item.id)}
+                        </span>
+                        
+                        <button
+                          onClick={() => updateQuantity(item.id, getItemQuantity(item.id) + 1)}
+                          className="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-lg transition-all duration-200 hover:scale-110 shadow-lg"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

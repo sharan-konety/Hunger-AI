@@ -9,7 +9,7 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
-  const { items, removeFromCart, clearCart, getTotalPrice, currentRestaurant } = useCart();
+  const { items, removeFromCart, clearCart, getTotalPrice, currentRestaurant, completeOrder } = useCart();
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -23,8 +23,8 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
   }, [isOpen]);
 
   const handleCheckout = () => {
+    completeOrder(); // This saves the order and clears the cart
     setShowOrderConfirmation(true);
-    clearCart();
     setTimeout(() => {
       setShowOrderConfirmation(false);
       setIsOpen(false);
@@ -95,9 +95,18 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
                 </div>
                 <h3 className="text-2xl font-light text-slate-900 mb-3">Order Confirmed!</h3>
                 <p className="text-slate-600 font-light mb-4">Thank you for choosing Hunger.</p>
-                <p className="text-lg text-cyan-600 font-medium">
+                <p className="text-lg text-cyan-600 font-medium mb-6">
                   Estimated delivery: <span className="font-semibold">15-30 minutes</span>
                 </p>
+                <a
+                  href="/orders"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  View Order History
+                </a>
               </div>
             ) : items.length === 0 ? (
               <div className="p-8 md:p-12 text-center">
