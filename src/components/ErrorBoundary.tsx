@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Component, ReactNode, ErrorInfo } from 'react';
+import Link from 'next/link';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -39,7 +40,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <div className="text-6xl mb-6">🍽️</div>
             <h1 className="text-3xl font-light text-slate-900 mb-4">Oops! Something went wrong</h1>
             <p className="text-slate-600 font-light mb-8 leading-relaxed">
-              We encountered an unexpected error. Don't worry - your cart is safe! 
+              We encountered an unexpected error. Don&apos;t worry - your cart is safe! 
               Try refreshing the page or go back to explore our delicious restaurants.
             </p>
             
@@ -50,12 +51,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               >
                 Refresh Page
               </button>
-              <a
+              <Link
                 href="/"
                 className="px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-medium hover:bg-slate-50 transition-all duration-300"
               >
                 Go to Home
-              </a>
+              </Link>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useCart } from '@/components/CartContext';
+import Link from 'next/link';
 
 export default function OrdersPage() {
   const { pastOrders, reorder } = useCart();
@@ -41,7 +42,7 @@ export default function OrdersPage() {
             <p className="text-slate-600 font-light mb-8">
               Start exploring our amazing restaurants and place your first order!
             </p>
-            <a
+            <Link
               href="/restaurants"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
@@ -49,7 +50,7 @@ export default function OrdersPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
               Browse Restaurants
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="space-y-6">

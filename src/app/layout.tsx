@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import { CartProvider } from '@/components/CartContext';
 import AIChatWidget, { ChatProvider } from '@/components/AIChatWidget';
 import ErrorBoundary, { CartErrorBoundary } from '@/components/ErrorBoundary';
+import Link from 'next/link';
 
 
 const geistSans = Geist({
@@ -44,12 +45,12 @@ export default function RootLayout({
                         <p className="text-slate-600 font-light mb-6">
                           This page encountered an error, but you can still browse other restaurants.
                         </p>
-                        <a 
+                        <Link 
                           href="/" 
                           className="px-6 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-xl font-medium hover:from-slate-900 hover:to-black transition-all duration-300"
                         >
                           Go to Home
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   }>
