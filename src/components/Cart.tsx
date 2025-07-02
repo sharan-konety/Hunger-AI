@@ -9,7 +9,7 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
-  const { items, removeFromCart, clearCart, getTotalPrice, currentRestaurant } = useCart();
+  const { items, removeFromCart, clearCart, getTotalPrice, currentRestaurant, completeOrder } = useCart();
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -24,7 +24,7 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
 
   const handleCheckout = () => {
     setShowOrderConfirmation(true);
-    clearCart();
+    completeOrder(); // This saves the order to past orders and clears cart
     setTimeout(() => {
       setShowOrderConfirmation(false);
       setIsOpen(false);
@@ -95,8 +95,17 @@ const Cart: React.FC<CartProps> = ({ isOpen, setIsOpen }) => {
                 </div>
                 <h3 className="text-2xl font-light text-slate-900 mb-3">Order Confirmed!</h3>
                 <p className="text-slate-600 font-light mb-4">Thank you for choosing Hunger.</p>
-                <p className="text-lg text-cyan-600 font-medium">
+                <p className="text-lg text-cyan-600 font-medium mb-6">
                   Estimated delivery: <span className="font-semibold">15-30 minutes</span>
+                </p>
+                <p className="text-sm text-slate-500 font-light">
+                  View your order in 
+                  <button 
+                    onClick={() => {setIsOpen(false); window.location.href = '/orders';}}
+                    className="text-cyan-600 hover:text-cyan-700 font-medium ml-1 underline"
+                  >
+                    Order History
+                  </button>
                 </p>
               </div>
             ) : items.length === 0 ? (

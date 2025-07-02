@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const query = body.query || body.craving;
+    const conversationHistory = body.conversationHistory || [];
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'Missing or invalid query' }, { status: 400 });
@@ -41,19 +42,58 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
     }
 
-    // Get all menu items from all restaurants for context
-    const allMenuItems = restaurants.flatMap(restaurant => 
-      restaurant.menu.map(item => ({
+    // Get all restaurants and menu items for context
+    const restaurantContext = restaurants.map(restaurant => ({
+      name: restaurant.name,
+      cuisine: restaurant.cuisine.join(', '),
+      rating: restaurant.rating,
+      description: restaurant.description,
+      popularItems: restaurant.menu.slice(0, 3).map(item => ({
         name: item.name,
         description: item.description,
-        restaurant: restaurant.name,
-        cuisine: restaurant.cuisine.join(', ')
+        price: item.price
       }))
-    );
+    }));
 
-    const menuContext = allMenuItems.slice(0, 50).map(item => 
-      `${item.name} from ${item.restaurant} (${item.cuisine}) - ${item.description}`
-    ).join('\n');
+    const contextString = restaurantContext.map(restaurant => 
+      `${restaurant.name} (${restaurant.cuisine}, ${restaurant.rating}★): ${restaurant.description}
+Popular dishes: ${restaurant.popularItems.map(item => `${item.name} ($${item.price}) - ${item.description}`).join('; ')}`
+    ).join('\n\n');
+
+    // Enhanced system prompt with chain of thought reasoning
+    const systemPrompt = `You are a knowledgeable food concierge for Hunger, a premium food delivery service. Your job is to provide thoughtful, personalized restaurant and dish recommendations.
+
+REASONING APPROACH:
+1. First, understand what the user is asking for (cuisine type, dietary needs, mood, etc.)
+2. Consider our conversation history to understand their preferences
+3. Think through which restaurants and dishes would best match their needs
+4. Explain your reasoning clearly and provide specific recommendations
+
+AVAILABLE RESTAURANTS:
+${contextString}
+
+RESPONSE STYLE:
+- Be conversational and friendly, like a knowledgeable food expert
+- Show your thinking process: "Based on what you're looking for..."
+- Give specific dish recommendations with brief explanations
+- Consider dietary restrictions, preferences, and context from our conversation
+- If appropriate, suggest complementary items or alternatives
+- Keep responses focused but informative
+
+EXAMPLE REASONING:
+"Since you mentioned you're in the mood for something spicy, I'm thinking of our Indian options. Saffron Spice would be perfect - their Butter Chicken has that rich, creamy heat you might enjoy, and if you want something lighter, their Tandoori Chicken is excellently spiced without being too heavy."
+
+Always explain WHY you're recommending something based on the user's needs and preferences.`;
+
+    // Build messages array with conversation history
+    const messages = [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      // Include conversation history for context
+      ...conversationHistory.slice(-8), // Keep last 8 messages for context
+    ];
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -63,18 +103,11 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a helpful food recommendation assistant for the Hunger food delivery app. Based on the user's craving, recommend specific dishes from our partner restaurants. Here are some of our available menu items:\n\n${menuContext}\n\nRespond with a friendly intro and as many recommendations as you think are helpful. Each recommendation should include the dish name and restaurant.`,
-          },
-          {
-            role: 'user',
-            content: query,
-          },
-        ],
-        max_tokens: 400,
+        messages: messages,
+        max_tokens: 500,
         temperature: 0.7,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
       }),
     });
 

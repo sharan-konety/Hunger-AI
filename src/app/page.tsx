@@ -1,9 +1,13 @@
+"use client";
+
 import Link from 'next/link';
+import { useChatWidget } from '@/components/AIChatWidget';
 import RestaurantCard from '@/components/RestaurantCard';
 import { restaurants } from '@/lib/data';
 
 export default function Home() {
-  const featuredRestaurants = restaurants.slice(0, 6); // Show 6 restaurants in 2 rows
+  const { openChat } = useChatWidget();
+  const featuredRestaurants = restaurants.slice(0, 3); // Show 3 featured restaurants
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
@@ -33,18 +37,28 @@ export default function Home() {
               and delivered to your doorstep with uncompromising quality.
             </p>
             
-            {/* CTA Button */}
-            <div className="mb-20">
+            {/* CTA Buttons */}
+            <div className="mb-20 flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Link
                 href="/restaurants"
                 className="group relative inline-flex items-center px-12 py-4 text-lg font-medium text-white bg-gradient-to-r from-slate-800 to-slate-900 rounded-full hover:from-slate-900 hover:to-black transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
               >
-                <span className="relative z-10">Explore Our Collection</span>
+                <span className="relative z-10">Explore Restaurants</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-cyan-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <svg className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </Link>
+              
+              <button 
+                onClick={openChat}
+                className="group inline-flex items-center px-8 py-4 text-lg font-light text-slate-700 bg-white border-2 border-slate-200 rounded-full hover:border-cyan-300 hover:text-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                </svg>
+                Ask AI Concierge
+              </button>
             </div>
           </div>
           
@@ -81,20 +95,20 @@ export default function Home() {
         
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-5xl md:text-6xl font-light text-slate-900 mb-6 tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-light text-slate-900 mb-6 tracking-tight">
               Featured
-              <span className="block text-4xl md:text-5xl text-cyan-600 font-extralight mt-2">
-                Establishments
+              <span className="block text-3xl md:text-4xl text-cyan-600 font-extralight mt-2">
+                Restaurants
               </span>
             </h2>
             <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-600 mx-auto mb-8"></div>
             <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed font-light">
-              Discover our carefully selected collection of restaurants, each chosen for their 
-              commitment to culinary excellence and exceptional dining experiences.
+              Discover our handpicked selection of exceptional restaurants, each chosen for their 
+              commitment to culinary excellence and unforgettable dining experiences.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl mx-auto">
             {featuredRestaurants.map((restaurant, index) => (
               <div 
                 key={restaurant.id} 
@@ -167,6 +181,27 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Call to Action Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-3xl md:text-4xl font-light text-slate-900 mb-6 tracking-tight">
+            Ready to Begin Your Culinary Journey?
+          </h3>
+          <p className="text-lg text-slate-600 mb-10 font-light max-w-2xl mx-auto">
+            Discover exceptional restaurants and let our AI concierge help you find the perfect dining experience.
+          </p>
+          <Link
+            href="/restaurants"
+            className="inline-flex items-center px-10 py-4 text-lg font-medium text-white bg-gradient-to-r from-slate-800 to-slate-900 rounded-full hover:from-slate-900 hover:to-black transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
+          >
+            Browse All Restaurants
+            <svg className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
       </section>
     </div>
