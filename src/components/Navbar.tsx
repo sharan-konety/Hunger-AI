@@ -42,6 +42,12 @@ const Navbar: React.FC = () => {
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-600 transition-all duration-300 group-hover:w-full"></span>
                 </span>
               </Link>
+              <Link href="/orders" className="group">
+                <span className="text-slate-700 hover:text-cyan-600 font-light text-lg transition-colors duration-300 relative">
+                  Orders
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-600 transition-all duration-300 group-hover:w-full"></span>
+                </span>
+              </Link>
             </div>
             
             {/* Cart Icon */}

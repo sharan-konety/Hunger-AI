@@ -48,20 +48,30 @@ const AIChatWidget: React.FC = () => {
   const handleSendMessage = async () => {
     if (inputMessage.trim() && !isLoading) {
       const userMessage: Message = { id: Date.now(), text: inputMessage, isBot: false };
-      setMessages(prev => [...prev, userMessage]);
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
       setIsLoading(true);
       
       const userInput = inputMessage;
       setInputMessage('');
 
       try {
-        // Call the recommendation API
+        // Send conversation history for context-aware responses
+        const conversationHistory = updatedMessages.map(msg => ({
+          role: msg.isBot ? 'assistant' : 'user',
+          content: msg.text
+        }));
+
+        // Call the recommendation API with conversation history
         const response = await fetch('/api/recommend', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ query: userInput }),
+          body: JSON.stringify({ 
+            query: userInput,
+            conversationHistory: conversationHistory 
+          }),
         });
 
         if (response.ok) {

@@ -1,31 +1,50 @@
-# 🍔 Hunger-AI
+# 🍱 Hunger – AI-Powered Food Delivery Platform
 
-A modern, full-stack food delivery app built with **Next.js**, **React**, and **Tailwind CSS**.  
-Order delicious food from your favorite restaurants, get AI-powered recommendations, and enjoy a seamless, responsive experience.
+Hunger is a full-stack food delivery web app powered by OpenAI. Users can browse restaurants, explore menus, manage a real-time cart, simulate order tracking, and get personalized food suggestions via AI.
+
+Built with **Next.js (App Router)**, **Tailwind CSS**, **OpenAI GPT-3.5**, and deployed on **Vercel**.
+
+![Hunger AI Preview](./preview.png)
 
 ---
 
 ## 🚀 Features
 
-- Browse a curated list of restaurants and menus  
-- Add items to your cart and place orders  
-- Track your order status  
-- AI-powered food recommendations (OpenAI integration)  
-- Responsive, mobile-friendly design  
-- Persistent cart (localStorage)
+- 🛍️ Browse restaurants with interactive cards
+- 📋 View menus, add to cart, and manage orders in real time
+- 🤖 Get smart food recommendations via OpenAI
+- 🚚 Simulate order tracking with dynamic status updates
+- 🌗 Fully responsive design with dark mode
+- 🧠 Built with App Router, server components, and AI APIs
 
 ---
 
-## 🛠️ Tech Stack
+## 🧰 Tech Stack
 
-- Next.js (App Router)  
-- React  
-- Tailwind CSS  
-- OpenAI API (for AI chat & recommendations)
+- **Framework:** Next.js 14 (App Router, TypeScript)
+- **Styling:** Tailwind CSS
+- **AI Integration:** OpenAI GPT-3.5 (`/api/recommend`)
+- **Deployment:** Vercel
+- **State Management:** React Context (for Cart)
+- **Animations & Icons:** Heroicons, Framer Motion
 
 ---
 
-## ⚙️ Getting Started (Local Development)
+## ⚙️ Getting Started
+
+```bash
+git clone https://github.com/sharan-konety/Hunger-AI.git
+cd Hunger-AI
+npm install
+```
+
+Create a `.env.local` file:
+
+```env
+OPENAI_API_KEY=your_openai_key_here
+```
+
+Then run locally:
 
 ```bash
 git clone https://github.com/sharan-konety/hunger.git
@@ -37,22 +56,43 @@ OPENAI_API_KEY=your-openai-api-key-here
 Then start the server:
 
 npm run dev
-Open http://localhost:3000 in your browser.
-
-🚢 Deploying to Vercel (Recommended)
-Push your code to GitHub
-Go to vercel.com and import your repo
-In Vercel dashboard → Settings → Environment Variables
-Add:
-OPENAI_API_KEY=your-openai-api-key
-Deploy! Your app will be live on a .vercel.app domain
-
-🔑 Environment Variables
-Variable	Description
-OPENAI_API_KEY	Your OpenAI API key (serverless functions)
-
-🙏 Credits
-Restaurant/menu images: Unsplash
-Built with ❤️ by Sharan Konety
+```
 
 ---
+
+## 📁 Project Structure
+
+```
+app/
+├── restaurants/       → Menu + Listings
+├── recommend/         → OpenAI-powered chat
+├── order/tracking/    → Order simulation
+├── api/recommend/     → GPT-3.5 API route
+components/            → UI Components
+lib/data.ts            → Mock restaurants/menus
+styles/                → Tailwind CSS
+```
+
+---
+
+## 🧠 AI Integration
+
+Food recommendations are generated using `gpt-3.5-turbo`. Users can enter prompts like:
+
+- "I'm craving something spicy"
+- "Show me protein-heavy options"
+- "What should I eat post-workout?"
+
+---
+
+## 🖥️ Live Demo
+
+[➡️ View Demo on Vercel](https://your-vercel-url.vercel.app)
+
+---
+
+## 🙌 Acknowledgments
+
+- [OpenAI](https://openai.com/)
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
