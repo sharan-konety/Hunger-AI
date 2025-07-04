@@ -87,7 +87,7 @@ Food recommendations are generated using `gpt-3.5-turbo`. Users can enter prompt
 
 ## 🖥️ Live Demo
 
-[➡️ View Demo on Vercel](https://your-vercel-url.vercel.app)
+[➡️ View Demo on Vercel](https://hungry-cheetah.vercel.app)
 
 ---
 
